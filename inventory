@@ -1,0 +1,16 @@
+#Pada file ini berisi host yang akan menjalankan task yang sudah dibuat
+
+#user yang mengeksekusi playbook
+[all:vars]
+ansible_user=root
+#Perhatikan lokasi dan nama $USER nya
+ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+#Host webserver untuk simrs dan
+[webserver]
+10.0.3.124
+10.0.3.221:73
+
+#Database simrs
+[database]
+10.0.3.222:73
