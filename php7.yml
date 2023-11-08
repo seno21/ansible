@@ -1,4 +1,4 @@
-- name: Play Update Package
+- name: PLAY UPDATE PACKAGE DAN TIMEZONE
   hosts: localhost
   tasks:
     - name: Update Paket Repository
@@ -6,7 +6,11 @@
         update-cache: yes
         upgrade: yes
 
-- name: Play Setup WEB Server
+    - name: Setting Timezone
+      timezone:
+        name: Asia/Jakarta
+
+- name: PLAY SETUP WEB SERVER
   hosts: localhost
   tasks:
     - name: Install Apache2
@@ -17,7 +21,7 @@
       ansible.builtin.systemd:
         name: apache2
         state: restarted
-        enabled: true
+        enabled: True
 
     - name: Menambahkan $user ke group www-data
       ansible.builtin.user:
@@ -34,7 +38,7 @@
         recurse: yes
       become: yes
 
-- name: Play Setup PHP
+- name: PLAY SETUP PHP 7.4
   hosts: localhost
   tasks:
     - name: Install GNUPG
@@ -63,10 +67,6 @@
           - php7.4-curl
           - php7.4-cli
           - php7.4-zip
-
-    - name: Intall dan config libmcrypt php 7.4
-      ansible.builtin.apt:
-        name:
           - php7.4-dev
           - gcc
           - make
@@ -74,8 +74,12 @@
           - libc-dev
           - pkg-config
           - libmcrypt-dev
-      ansible.builtin.command: pecl install mcrypt-1.0.3
-      ansible.builtin.expect:
+
+    - name: Install dan config libmcrypt php 7.4
+      shell: pecl install mcrypt
+      async: 3600
+      # cara cek terinstallnya
+      #php -m | grep "mcrypt"
 
     - name: Copy file php.ini
       ansible.builtin.copy:
