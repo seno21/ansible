@@ -1,0 +1,98 @@
+#Install dan konfigurasi PHP 5.6
+#Tested on Ubuntu 20.04
+
+- name: PLAY UPDATE PACKAGE DAN TIMEZONE
+  hosts: localhost
+  tasks:
+    - name: Update Paket Repository
+      ansible.builtin.apt:
+        update-cache: yes
+        upgrade: yes
+
+    - name: Setting Timezone
+      timezone:
+        name: Asia/Jakarta
+
+- name: PLAY SETUP WEB SERVER
+  hosts: localhost
+  tasks:
+    - name: Install Apache2
+      ansible.builtin.apt:
+        name: apache2
+
+    - name: Start and Enable service Apache2
+      ansible.builtin.systemd:
+        name: apache2
+        state: restarted
+        enabled: True
+
+    - name: Menambahkan $user ke group www-data
+      ansible.builtin.user:
+        name: "{{ ansible_env.USER }}" #membaca user yg di pakai berdasarkan env variabel
+        groups: www-data
+        append: yes
+
+    - name: Set permision
+      ansible.builtin.file:
+        path: /var/www/html/
+        mode: "0775"
+        owner: "{{ ansible_env.USER }}"
+        group: www-data
+        recurse: yes
+      become: yes
+
+- name: PLAY SETUP PHP5.6
+  hosts: localhost #sesuaikan
+  tasks:
+    - name: Install GNUPG
+      ansible.builtin.apt:
+        name:
+          - gnupg
+          - build-essential
+
+    - name: Add Repository PHP5.6
+      ansible.builtin.apt_repository:
+        repo: ppa:ondrej/php
+        state: present
+
+    - name: Install PHP 5.6
+      ansible.builtin.apt:
+        name:
+          - php5.6
+          - php5.6-common
+          - php5.6-xml
+          - php5.6-xmlrpc
+          - php5.6-mysqlnd
+          - php5.6-mbstring
+          - php5.6-gd
+          - php5.6-json
+          - php5.6-curl
+          - php5.6-cli
+          - php5.6-zip
+          - php5.6-pear
+          - php5.6-dev
+          - php5.6-mcrypt
+
+    - name: Install Lybmycrypt Plugin
+      ansible.builtin.apt:
+        name:
+          - gcc
+          - make
+          - autoconf
+          - libc-dev
+          - pkg-config
+          - libmcrypt-dev
+
+    - name: Copy file php.ini
+      ansible.builtin.copy:
+        src: ~/ansible/php/config/php5/php.ini
+        dest: /etc/php/5.6/apache2/
+        owner: root
+        group: root
+        mode: "0644"
+        backup: yes
+
+    - name: Restart service Apache2
+      systemd:
+        name: apache2
+        state: restarted

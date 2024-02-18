@@ -1,0 +1,96 @@
+- name: PLAY UPDATE PACKAGE DAN TIMEZONE
+  hosts: localhost
+  tasks:
+    - name: Update Paket Repository
+      ansible.builtin.apt:
+        update-cache: yes
+        upgrade: yes
+
+    - name: Setting Timezone
+      timezone:
+        name: Asia/Jakarta
+
+- name: PLAY SETUP WEB SERVER
+  hosts: localhost
+  tasks:
+    - name: Install Apache2
+      ansible.builtin.apt:
+        name: apache2
+
+    - name: Start and Enable service Apache2
+      ansible.builtin.systemd:
+        name: apache2
+        state: restarted
+        enabled: True
+
+    - name: Menambahkan $user ke group www-data
+      ansible.builtin.user:
+        name: "{{ ansible_env.USER }}" #membaca user yg di pakai berdasarkan env variabel
+        groups: www-data
+        append: yes
+
+    - name: Set permision
+      ansible.builtin.file:
+        path: /var/www/html/
+        mode: "0775"
+        owner: "{{ ansible_env.USER }}"
+        group: www-data
+        recurse: yes
+      become: yes
+
+- name: PLAY SETUP PHP 7.4
+  hosts: localhost
+  tasks:
+    - name: Install GNUPG
+      ansible.builtin.apt:
+        name:
+          - gnupg
+          - build-essential
+
+    - name: Add Repository PHP7.4
+      ansible.builtin.apt_repository:
+        repo: ppa:ondrej/php
+        state: present
+
+    #default php pada ubuntu 20.04 adalaha versi 7.4
+    - name: Install PHP 7.4 Default Ubuntu 20.04
+      ansible.builtin.apt:
+        name:
+          - php7.4
+          - php7.4-common
+          - php7.4-xml
+          - php7.4-xmlrpc
+          - php7.4-mysqlnd
+          - php7.4-mbstring
+          - php7.4-gd
+          - php7.4-json
+          - php7.4-curl
+          - php7.4-cli
+          - php7.4-zip
+          - php7.4-dev
+          - gcc
+          - make
+          - autoconf
+          - libc-dev
+          - pkg-config
+          - libmcrypt-dev
+
+    - name: Install dan config libmcrypt php 7.4
+      shell: pecl install mcrypt
+      async: 3600
+      # cara cek terinstallnya
+      #php -m | grep "mcrypt"
+
+    - name: Copy file php.ini
+      ansible.builtin.copy:
+        src: ~/ansible/php/config/php7/php.ini
+        dest: /etc/php/7.4/apache2/
+        owner: root
+        group: root
+        mode: "0644"
+        backup: yes
+
+    - name: Restart service Apache2
+      systemd:
+        name: apache2
+        state: restarted

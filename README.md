@@ -68,24 +68,18 @@ Menjalankan playbook ansible
 ansible-playbook -i inventory playbook.yml
 ```
 
-## Support
+## Catatan
 
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## License
-
-For open source projects, say how it is licensed.
+Ketika akan mengeksekusi job pada ansible, baca dulu scriptnya, karena ada beberapa komentar yg harus di ganti dan di sesuaikan sesuai kebutuhan. Seperti pada file `mysql57.yml` ada inventory yg harus diganti, ada password yang harus di ganti dan ada ansible galaxy colletion yang harus di install.
 
 ## Link Referensi
 
 Tutorial Install Manual:
 
 - https://www.vultr.com/docs/how-to-install-mysql-5-7-on-ubuntu-20-04/ (install database)
+- https://php.tutorials24x7.com/blog/how-to-install-mcrypt-for-php-7-on-ubuntu-20-04-lts
 
 Repository:
 
 - https://dev.mysql.com/doc/mysql-apt-repo-quick-guide/en/#repo-qg-apt-repo-manual-setup (Repository mysql)
+- https://bugs.mysql.com/bug.php?id=113427 (GPG MySql 5.7 Update)

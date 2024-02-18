@@ -1,0 +1,19 @@
+- name: PLAY SETUP NODE EXPORTER
+  hosts: localhost
+  tasks:
+    - name: Copy binary file to Local Bin
+      ansible.builtin.copy:
+        src: ~/ansible/monitoring/config/node-exporter/node_exporter
+        dest: /usr/local/bin/
+
+    - name: Create and Copy service node-exporter
+      ansible.builtin.copy:
+        src: ~/ansible/monitoring/config/node-exporter/node-exporter.service
+        dest: /etc/systemd/system/
+
+    - name: Restart and enable service node exporter
+      ansible.builtin.systemd_service:
+        name: node-exporter
+        daemon-reload: True
+        enabled: true
+        state: restarted

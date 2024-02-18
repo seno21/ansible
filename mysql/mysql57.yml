@@ -1,0 +1,104 @@
+- name: PLAY BASIC KONFIGURASI
+  hosts: localhost
+  tasks:
+    - name: Update Paket Repository
+      ansible.builtin.apt:
+        update-cache: yes
+        upgrade: yes
+
+    - name: Setting Timezone
+      timezone:
+        name: Asia/Jakarta
+
+- name: PLAY INSTALL MYSQL 5.7
+  hosts: localhost #sesuaikan
+  tasks:
+    - name: Menambahkan GPG Key mysql 5.7
+      ansible.builtin.apt_key:
+        keyserver: pgp.mit.edu
+        id: A8D3785C
+
+    - name: Menambahkan repository mysql 5.7
+      ansible.builtin.apt_repository:
+        repo: "deb http://repo.mysql.com/apt/ubuntu bionic mysql-5.7"
+        state: present
+        update_cache: yes
+
+    - name: Install Mysql 5.7 pada ubuntu 20.04
+      ansible.builtin.apt:
+        name:
+          - mysql-client=5.7*
+          - mysql-community-server=5.7*
+          - mysql-server=5.7*
+          - pip
+
+    - name: Start dan Enable service MySql
+      ansible.builtin.systemd:
+        name: mysql
+        state: started
+        enabled: True
+
+# Sebelum menjalankan ini perlu install dulu dependency, gunakan perintah berikut:
+# ansible-galaxy collection install community.mysql
+# python3 -m pip install PyMySQL
+
+- name: PLAY KONFIGURAI USER MYSQL 5.7
+  hosts: localhost
+  vars:
+    - sock: /var/run/mysqld/mysqld.sock
+  tasks:
+    - name: Install PIP Required
+      ansible.builtin.pip:
+        name: PyMySQL
+
+    - name: Hapus all anonymous user
+      community.mysql.mysql_user:
+        name: ""
+        host_all: true
+        state: absent
+        login_unix_socket: "{{ sock }}"
+        # login_password: password  // ini di pakai untuk debuging
+
+    - name: Menghapus database test
+      mysql_db:
+        name: test
+        state: absent
+        login_unix_socket: "{{ sock }}"
+        # login_password: password
+
+    - name: Membuat user akses all privileges dan grant option host All
+      community.mysql.mysql_user:
+        host: "%"
+        user: "root"
+        password: password #ini sesuaikan
+        priv: "*.*:ALL,GRANT"
+        state: present
+        append_privs: yes
+        login_unix_socket: "{{ sock }}"
+        # login_password: password
+
+    - name: Membuat user akses all privileges dan grant option host localhost
+      community.mysql.mysql_user:
+        host: localhost
+        user: "root"
+        password: password #ini sesuaikan
+        priv: "*.*:ALL,GRANT"
+        state: present
+        append_privs: yes
+        login_unix_socket: "{{ sock }}"
+        # login_password: password
+
+    - name: Copy file mysqld.cnf
+      ansible.builtin.copy:
+        src: ~/ansible/mysql/config/mysqld.cnf
+        dest: /etc/mysql/mysql.conf.d
+        owner: root
+        group: root
+        mode: "0644"
+        backup: yes
+
+    - name: Restart service MySql
+      ansible.builtin.systemd:
+        name: mysql
+        state: restarted
+        enabled: True
