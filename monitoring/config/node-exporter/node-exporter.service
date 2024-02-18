@@ -3,7 +3,7 @@ Description=Service Node Exporter running in background
 
 [Service]
 Restart=always
-ExecStart=/usr/local/bin/node_exporter
+ExecStart=/usr/bin/node_exporter
 EsecReload=/bin/kill -HUP $MAINPID
 TimeoutStopSec=20s
 SendSIGKILL=no

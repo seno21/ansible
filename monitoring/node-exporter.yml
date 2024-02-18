@@ -4,7 +4,10 @@
     - name: Copy binary file to Local Bin
       ansible.builtin.copy:
         src: ~/ansible/monitoring/config/node-exporter/node_exporter
-        dest: /usr/local/bin/
+        dest: /usr/bin/
+        owner: root
+        group: root
+        mode: "0755"
 
     - name: Create and Copy service node-exporter
       ansible.builtin.copy:
